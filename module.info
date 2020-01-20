@@ -1,0 +1,5 @@
+Name: aquilon
+Version: 1.0
+Depends: director
+Description: Aquilon for Icinga Director
+ This module is an importer for STFC RAL's Aquilon managed hosts.
