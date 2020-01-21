@@ -4,18 +4,54 @@ namespace Icinga\Module\Aquilon\ProvidedHook\Director;
 
 use Icinga\Module\Director\Hook\ImportSourceHook;
 use Icinga\Module\Director\Web\Form\QuickForm;
+use Icinga\Module\Aquilon\ProvidedHook\Director\Aq;
 use Exception;
 
 /**
  * Class ImportSource
- * @package Icinga\Module\Puppetdb\ProvidedHook\Director
+ * @package Icinga\Module\Aquilon\ProvidedHook\Director
  */
 class ImportSource extends ImportSourceHook
 {
     public function fetchData()
     {
-        $myarray = ["a", "b", "c"]
+        $aq = new Aq($this->getSetting('baseurl'), $this->getSetting('profiledir'));
+        return $aq->getHosts();
+    }
 
-        return $myarray;
+    public static function addSettingsFormFields(QuickForm $form)
+    {
+        $form->addElement('text', 'baseurl', array(
+            'label' => $form->translate('Base URL'),
+            'required' => true,
+            'description' => $form->translate(
+                'API url for your instance, e.g. http://aquilon.gridpp.rl.ac.uk'
+            )
+        ));
+
+        $form->addElement('text', 'profiledir', array(
+            'label' => $form->translate('Profile Directory'),
+            'required' => true,
+            'description' => $form->translate(
+                'Location on filesystem where to store profiles, eg. /var/www/html/cache/'
+            )
+        ));
+    }
+
+    public function listColumns()
+    {
+        $columns = array("hostname", "shortname", "address", "personality");
+
+        return $columns;
+    }
+
+    public static function getDefaultKeyColumnName()
+    {
+        return 'hostname';
+    }
+
+    public function getName()
+    {
+        return 'Aquilon';
     }
 }
