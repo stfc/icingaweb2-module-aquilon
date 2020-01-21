@@ -36,6 +36,16 @@ class ImportSource extends ImportSourceHook
                 'Location on filesystem where to store profiles, eg. /var/www/html/cache/'
             )
         ));
+
+        $form->addElement('select', 'pers[]', array(
+            'attributes' => array(
+                'multiple' => 'multiple',
+            ),
+            'label'    => $form->translate('Personalities'),
+            'required' => true,
+            'value'    => "a",
+            'multiOptions' => $form->optionalEnum(array("a", "b", "c", "d")),
+        ));
     }
 
     public function listColumns()

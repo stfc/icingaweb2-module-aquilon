@@ -121,7 +121,7 @@ class Aq
                 if (strpos($hostname, "testing.internal") === false && array_key_exists("network", $pro['system'])) {
                     $address = $pro['system']['network']['primary_ip'];
                     $shortname = explode(".", $hostname)[0];
-                    $hosts[] = array(
+                    $hosts[] = (object) array(
                         "hostname" => $hostname,
                         "shortname" => $shortname,
                         "address" => $address,
@@ -133,7 +133,7 @@ class Aq
             }
         }
 
-        print_r($hosts);
+        //print_r($hosts);
     
         return $hosts;
     }
