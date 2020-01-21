@@ -21,6 +21,7 @@ class ImportSource extends ImportSourceHook
 
     public static function addSettingsFormFields(QuickForm $form)
     {
+        $aq = new Aq("http://aquilon.gridpp.rl.ac.uk", "/tmp");
         $form->addElement('text', 'baseurl', array(
             'label' => $form->translate('Base URL'),
             'required' => true,
@@ -37,14 +38,10 @@ class ImportSource extends ImportSourceHook
             )
         ));
 
-        $form->addElement('select', 'pers[]', array(
-            'attributes' => array(
-                'multiple' => 'multiple',
-            ),
+        $form->addElement('ExtensibleSet', 'personalities', array(
             'label'    => $form->translate('Personalities'),
             'required' => true,
-            'value'    => "a",
-            'multiOptions' => $form->optionalEnum(array("a", "b", "c", "d")),
+            'value'    => $aq->getPersonalities()
         ));
     }
 

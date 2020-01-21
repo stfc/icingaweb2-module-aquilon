@@ -24,10 +24,7 @@ class Aq
         // set url
         curl_setopt($this->ch, CURLOPT_URL, $this->baseurl . "/profiles/profiles-info.xml");
 
-        // $output contains the output string
         $output = curl_exec($this->ch);
-
-        // close curl resource to free up system resources
 
         $curl_error = curl_error($this->ch);
         $status = curl_getinfo($this->ch, CURLINFO_RESPONSE_CODE);
@@ -37,7 +34,8 @@ class Aq
             $profiles = simplexml_load_string($output);
 
             $modtimes = array();
-    
+            
+            // Get the profile name and last modified time out of the XML
             foreach($profiles as $profile) {
                 $modtimes[$profile[0]->__toString()] = $profile['mtime']->__toString();
             }
@@ -50,6 +48,7 @@ class Aq
 
     private function downloadProfiles() {
 
+        // Create cache directories if they do not already exist
         if (!file_exists($this->profiledir)) {
             $res = mkdir($this->profiledir);
         }
@@ -62,8 +61,9 @@ class Aq
 
         $profiles = array();
         foreach($modtimes as $profile => $modtime) {
+
             $filepath = $this->profiledir . "/" . $profile;
-            //print_r($filepath);
+
             if(file_exists($filepath)) {
                 if(filemtime($filepath) < $modtime) {
                     // download profile again
@@ -73,6 +73,7 @@ class Aq
                 //download profile
                 $this->downloadProfile($profile, $filepath);
             }
+            // Add profile to array
             $profiles[] = $profile;
         }
 
@@ -80,26 +81,24 @@ class Aq
     }
 
     private function downloadProfile($profileName, $filepath) {
-        // set url
+        // Set URL
         curl_setopt($this->ch, CURLOPT_URL, $this->baseurl . "/profiles/" . $profileName);
 
-        // $output contains the output string
         $output = curl_exec($this->ch);
 
         $curl_error = curl_error($this->ch);
         $status = curl_getinfo($this->ch, CURLINFO_RESPONSE_CODE);
 
         if ($curl_error === '' && $status === 200) {
-            file_put_contents($filepath, $output);
+            file_put_contents($filepath, $output); // Write the file to disk
         } else {
-            // Fail silently, some files don't have a 200 status code, so we'll just ignore these
+            // Fail silently, some files don't have a 200 status code (by design), so we'll just ignore these
         }
 
-        unset($output);
+        unset($output); // Remove profile from memory, as a lot of them will take up a large amount of memory
     }
 
     function getHosts() {
-        // Return hostname, shortname, personality, ip address
         $profiles = $this->downloadProfiles();
         $hosts = array();
 
@@ -110,17 +109,22 @@ class Aq
                 
                 $pro = json_decode($f, true);
 
+                // Strip .json from the filename to get the hostname
                 $hostname = str_replace(".json", "", $profile);
-
+                
+                // Get the personality key, if it exists. If not, just give it the default one!
                 if (array_key_exists("personality", $pro['system'])) {
                     $personality = $pro['system']['personality']['name'];
                 } else {
                     $personality = "all-hosts-t1";
                 }
                 
+                // Ignore hosts that have internal hostnames or have no network
                 if (strpos($hostname, "testing.internal") === false && array_key_exists("network", $pro['system'])) {
                     $address = $pro['system']['network']['primary_ip'];
+                    // The shortname is used by the loggers, it's the bit before the first .
                     $shortname = explode(".", $hostname)[0];
+                    // What we actually send to Icinga. If you want to send more data, just add another field here.
                     $hosts[] = (object) array(
                         "hostname" => $hostname,
                         "shortname" => $shortname,
@@ -129,12 +133,39 @@ class Aq
                     );
                 }
 
-                unset($pro);
+                unset($pro); // remove profile from memory, as these can get quite large
             }
         }
-
-        //print_r($hosts);
-    
+        
+        // Return hostname, shortname, personality, ip address
         return $hosts;
+    }
+
+    public function getPersonalities() {
+        // set url
+        curl_setopt($this->ch, CURLOPT_URL, $this->baseurl . ":6901/find/personality");
+
+        // $output contains the output string
+        $output = curl_exec($this->ch);
+
+        print_r($output);
+
+        $curl_error = curl_error($this->ch);
+        $status = curl_getinfo($this->ch, CURLINFO_RESPONSE_CODE);
+
+        if ($curl_error === '' && $status === 200) {
+            $personalities = array();
+            $pers = explode("\n", $output);
+            foreach($pers as $per) {
+                // Get the personality only, not the archetype
+                $personalities[] = explode("/", $per)[1];
+            }
+
+            return array_unique($personalities);
+        } else {
+            return array();
+        }
+
+        unset($output);
     }
 }
