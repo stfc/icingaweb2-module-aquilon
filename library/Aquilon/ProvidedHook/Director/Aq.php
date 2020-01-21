@@ -8,11 +8,12 @@ use Exception;
 
 class Aq
 {
-    function __construct($baseurl, $profiledir)
+    function __construct($baseurl, $profiledir, $personalities)
     {
         $this->baseurl = $baseurl;
         $this->profiledir = $profiledir;
         $this->ch = curl_init(); // curl handle
+        $this->personalities = $personalities;
 
         // Configure curl
         curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, true); // curl_exec returns response as a string
@@ -119,18 +120,24 @@ class Aq
                     $personality = "all-hosts-t1";
                 }
                 
-                // Ignore hosts that have internal hostnames or have no network
-                if (strpos($hostname, "testing.internal") === false && array_key_exists("network", $pro['system'])) {
-                    $address = $pro['system']['network']['primary_ip'];
-                    // The shortname is used by the loggers, it's the bit before the first .
-                    $shortname = explode(".", $hostname)[0];
-                    // What we actually send to Icinga. If you want to send more data, just add another field here.
-                    $hosts[] = (object) array(
-                        "hostname" => $hostname,
-                        "shortname" => $shortname,
-                        "address" => $address,
-                        "personality" => $personality
-                    );
+                $parray = $this->personalities->toArray();
+
+                // Check if this personality is in the allowed personalities
+                if (in_array($personality, $parray)) {
+
+                    // Ignore hosts that have internal hostnames or have no network
+                    if (strpos($hostname, "testing.internal") === false && array_key_exists("network", $pro['system'])) {
+                        $address = $pro['system']['network']['primary_ip'];
+                        // The shortname is used by the loggers, it's the bit before the first .
+                        $shortname = explode(".", $hostname)[0];
+                        // What we actually send to Icinga. If you want to send more data, just add another field here.
+                        $hosts[] = (object) array(
+                            "hostname" => $hostname,
+                            "shortname" => $shortname,
+                            "address" => $address,
+                            "personality" => $personality
+                        );
+                    }
                 }
 
                 unset($pro); // remove profile from memory, as these can get quite large
@@ -147,8 +154,6 @@ class Aq
 
         // $output contains the output string
         $output = curl_exec($this->ch);
-
-        print_r($output);
 
         $curl_error = curl_error($this->ch);
         $status = curl_getinfo($this->ch, CURLINFO_RESPONSE_CODE);

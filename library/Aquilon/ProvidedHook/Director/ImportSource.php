@@ -6,6 +6,7 @@ use Icinga\Module\Director\Hook\ImportSourceHook;
 use Icinga\Module\Director\Web\Form\QuickForm;
 use Icinga\Module\Aquilon\ProvidedHook\Director\Aq;
 use Exception;
+use Icinga\Application\Config;
 
 /**
  * Class ImportSource
@@ -13,15 +14,18 @@ use Exception;
  */
 class ImportSource extends ImportSourceHook
 {
+
     public function fetchData()
     {
-        $aq = new Aq($this->getSetting('baseurl'), $this->getSetting('profiledir'));
+        $config = Config::module('aquilon');
+        $aq = new Aq($this->getSetting('baseurl'), $this->getSetting('profiledir'), $config->get('personalities', 'personalities'));
         return $aq->getHosts();
     }
 
     public static function addSettingsFormFields(QuickForm $form)
     {
-        $aq = new Aq("http://aquilon.gridpp.rl.ac.uk", "/tmp");
+        $config = Config::module('aquilon');
+        $aq = new Aq("http://aquilon.gridpp.rl.ac.uk", "/tmp", $config->get('personalities', 'personalities'));
         $form->addElement('text', 'baseurl', array(
             'label' => $form->translate('Base URL'),
             'required' => true,
@@ -38,11 +42,11 @@ class ImportSource extends ImportSourceHook
             )
         ));
 
-        $form->addElement('ExtensibleSet', 'personalities', array(
+        /*$form->addElement('ExtensibleSet', 'personalities', array(
             'label'    => $form->translate('Personalities'),
             'required' => true,
             'value'    => $aq->getPersonalities()
-        ));
+        ));*/
     }
 
     public function listColumns()
