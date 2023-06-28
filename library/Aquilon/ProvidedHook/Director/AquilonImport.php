@@ -6,9 +6,16 @@ namespace Icinga\Module\Aquilon\ProvidedHook\Director;
 // use Exception;
 
 class AquilonImport {
+    // Construct
+    // Arguments: $baseurl - API url for your instance, e.g. http://aquilon.gridpp.rl.ac.uk
+    function __construct($baseurl)
+    {
+        $this->baseurl = $baseurl;
+    }
+
     // Main function
-    public function parseJSONData($url) {
-        $raw_data = self::getRawData($url);
+    public function parseJSONData() {
+        $raw_data = self::getRawData($this->baseurl);
         $parsed_data = self::parseRawData($raw_data);
         return $parsed_data;
     }

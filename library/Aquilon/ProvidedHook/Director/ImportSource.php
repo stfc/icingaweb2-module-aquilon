@@ -18,20 +18,21 @@ class ImportSource extends ImportSourceHook
     public function fetchData()
     {
         $config = Config::module('aquilon');
-        $aq = new AquilonImport();
-        return $aq->parseJSONData("http://aquilon.gridpp.rl.ac.uk/cgi-bin/report/host_grn_personality_archetype");
+        $aq = new AquilonImport($this->getSetting('baseurl'));
+        return $aq->parseJSONData();
     }
 
-    // public static function addSettingsFormFields(QuickForm $form)
-    // {
-    //     $config = Config::module('aquilon');
-    //     $form->addElement('text', 'baseurl', array(
-    //         'label' => $form->translate('Base URL'),
-    //         'required' => true,
-    //         'description' => $form->translate(
-    //             'API url for your instance, e.g. http://aquilon.gridpp.rl.ac.uk'
-    //         )
-    //     ));
+    public static function addSettingsFormFields(QuickForm $form)
+    {
+        $config = Config::module('aquilon');
+        $aq = new AquilonImport("http://aquilon.gridpp.rl.ac.uk/cgi-bin/report/host_grn_personality_archetype");
+        $form->addElement('text', 'baseurl', array(
+            'label' => $form->translate('Base URL'),
+            'required' => true,
+            'description' => $form->translate(
+                'API url for your instance, e.g. http://aquilon.gridpp.rl.ac.uk'
+            )
+        ));
 
     //     $form->addElement('text', 'profiledir', array(
     //         'label' => $form->translate('Profile Directory'),
@@ -46,7 +47,7 @@ class ImportSource extends ImportSourceHook
     //         'required' => true,
     //         'value'    => $aq->getPersonalities()
     //     ));*/
-    // }
+    }
 
     public function listColumns()
     {
