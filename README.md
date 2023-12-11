@@ -8,4 +8,10 @@ a little while to download them all.
 This is really designed for the Quattor/Aquilon implementation at STFC RAL - but if you are able to make
 use of it, please do!
 
+This import source requires a file containing a list of Aquilon archetypes and personalities, in this format:
+archetype/personality
+archetype2/personality2
+
+And so on. The location is defined in Icinga Director.
+
 Currently being updated.

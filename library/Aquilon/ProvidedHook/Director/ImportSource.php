@@ -14,18 +14,18 @@ use Icinga\Application\Config;
  */
 class ImportSource extends ImportSourceHook
 {
-
     public function fetchData()
     {
         $config = Config::module('aquilon');
-        $aq = new AquilonImport($this->getSetting('baseurl'));
+        $aq = new AquilonImport($this->getSetting('baseurl'), $this->getSetting('basedir'));
         return $aq->parseJSONData();
     }
 
     public static function addSettingsFormFields(QuickForm $form)
     {
         $config = Config::module('aquilon');
-        $aq = new AquilonImport("http://aquilon.gridpp.rl.ac.uk/cgi-bin/report/host_grn_personality_archetype");
+        $aq = new AquilonImport("http://aquilon.gridpp.rl.ac.uk/cgi-bin/report/host_grn_personality_archetype", "/usr/share/icingaweb2/modules/aquilon/library/Aquilon/ProvidedHook/Director/ArchetypePersonalities.txt");
+
         $form->addElement('text', 'baseurl', array(
             'label' => $form->translate('Base URL'),
             'required' => true,
@@ -34,24 +34,18 @@ class ImportSource extends ImportSourceHook
             )
         ));
 
-    //     $form->addElement('text', 'profiledir', array(
-    //         'label' => $form->translate('Profile Directory'),
-    //         'required' => true,
-    //         'description' => $form->translate(
-    //             'Location on filesystem where to store profiles, eg. /var/www/html/cache/'
-    //         )
-    //     ));
-
-    //     /*$form->addElement('ExtensibleSet', 'personalities', array(
-    //         'label'    => $form->translate('Personalities'),
-    //         'required' => true,
-    //         'value'    => $aq->getPersonalities()
-    //     ));*/
+        $form->addElement('text', 'basedir', array(
+            'label' => $form->translate('Base directory'),
+            'required' => true,
+            'description' => $form->translate(
+                'Directory for your Archetype/Personality file e.g. /usr/share/icingaweb2/modules/aquilon/library/Aquilon/ProvidedHook/Director/ArchetypePersonalities.txt'
+            )
+        ));
     }
 
     public function listColumns()
     {
-        $columns = array("hostname", "archetype", "personality", "email");
+        $columns = array("hostname", "archetype", "personality", "email", "has_raid", "raid_model");
 
         return $columns;
     }
